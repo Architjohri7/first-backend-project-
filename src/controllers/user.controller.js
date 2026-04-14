@@ -364,11 +364,13 @@ const getUserChannelProfile = asyncHandler(async (req,res) => {
 
 
    export {registerUser,
-     loginUser,
-      logoutUser,
-       refreshAccessToken,
-        changeCurrentPassword,
-         getCurrentUser,
-          updateAccount,
-           updateUserAvatar};
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccount,
+    updateUserAvatar};
 
+
+    
