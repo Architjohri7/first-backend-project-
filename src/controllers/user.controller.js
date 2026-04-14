@@ -291,7 +291,76 @@ const updateUserCoverImage = asyncHandler(async (req,res) => {
 })
 
 
+const getUserChannelProfile = asyncHandler(async (req,res) => {
 
+    const {username} = req.params;
+
+    if(!username || !username.trim()){
+        throw new ApiError(400,"Username is required");
+    }
+
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username.toLowerCase()
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                subscribersCount: {
+                    $size: "$subscribers"
+                },
+                channelSubscribedToCount: {
+                    $size: "$subscribedTo"
+                },
+                isSubscribed: {
+                    $cond: [
+                        {
+                            $in: [req.user._id, "$subscribers.subscriber"]
+                        },
+                        true,
+                        false
+                    ]
+                }
+            }
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                subscribersCount: 1,
+                channelSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1
+            }
+        }
+    ]);
+
+    if(!channel || channel.length === 0){
+        throw new ApiError(404,"Channel not found with this username");
+    }
+
+    return res.status(200).json(new ApiResponse(200,channel[0],"Channel profile fetched successfully"));
+
+})    
 
 
    export {registerUser,
